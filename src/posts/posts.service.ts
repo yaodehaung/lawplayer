@@ -33,9 +33,16 @@ export class PostsService {
   private initdb = async () => {
     this.db = new JsonDB(new Config('myDataBase', true, false, '/'));
   };
-  @Cron(CronExpression.EVERY_MINUTE)
-  handleCron() {
-    this.logger.debug('EVERY_MINUTE');
+  @Cron(CronExpression.EVERY_SECOND)
+  async handleCron() {
+    const data: any = await this.db.getObject<any>('/posts');
+
+    const filteredObj = Object.keys(data).reduce((p, c) => {
+      if (data[c].status == status.IDLE) p[c] = data[c];
+      return p;
+    }, {});
+
+    this.logger.debug(JSON.stringify(filteredObj));
   }
 
   @Process('message-job')
